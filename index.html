@@ -1,0 +1,1402 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EDEN_GO 완전정복 · 이든X학원</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;700;900&family=Noto+Sans+KR:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+/* ══════════════════════════════════════════
+   토큰 — 시험지 · 답안지(OMR) · 채점펜 모티프
+══════════════════════════════════════════ */
+:root{
+  --ink:#1C2530; --ink-soft:#525C6B; --ink-faint:#8B93A0;
+  --paper:#F6F4EC; --card:#FFFFFF; --rule:#DCD6C4; --rule-soft:#EAE6D8;
+  --navy:#1B3A6B; --navy-deep:#0E2140;
+  --red:#C1392B; --red-soft:#FBEAE7;
+  --green:#276B4E; --green-soft:#E9F4EC;
+  --gold:#D9A62A; --gold-soft:#FBF1D8;
+  --serif:'Noto Serif KR',serif; --sans:'Noto Sans KR',sans-serif; --mono:'JetBrains Mono',monospace;
+  --r:14px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--sans); background:var(--paper); color:var(--ink);
+  line-height:1.75; -webkit-font-smoothing:antialiased;
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(28,37,48,0.045) 1px, transparent 0);
+  background-size:22px 22px;
+}
+img{max-width:100%}
+a{color:inherit}
+
+/* ── 상단 진행률 바 ── */
+.progress{position:fixed; top:0; left:0; height:3px; background:var(--red); z-index:1000; width:0%; transition:width .1s}
+
+/* ══════════════════════════════════════════
+   HERO — 문제집 표지
+══════════════════════════════════════════ */
+.hero{
+  background:var(--navy-deep);
+  background-image:
+    linear-gradient(160deg,var(--navy-deep) 0%,var(--navy) 65%,#173059 100%);
+  color:#fff; padding:56px 20px 64px; position:relative; overflow:hidden;
+}
+.hero::after{
+  content:''; position:absolute; inset:0; opacity:.5; pointer-events:none;
+  background-image:radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1.4px);
+  background-size:26px 26px;
+}
+.hero-inner{max-width:760px; margin:0 auto; position:relative; z-index:1;}
+.hero-eyebrow{
+  font-family:var(--mono); font-size:12px; letter-spacing:.14em; text-transform:uppercase;
+  color:#B9C6DE; display:flex; align-items:center; gap:10px; margin-bottom:22px;
+}
+.hero-eyebrow::before{content:''; width:26px; height:1px; background:#5A79A8;}
+.hero-title{
+  font-family:var(--serif); font-weight:900; font-size:clamp(34px,6.4vw,58px);
+  line-height:1.14; letter-spacing:-0.5px; margin-bottom:6px;
+}
+.hero-title .go{color:var(--gold);}
+.hero-sub{
+  font-size:clamp(15px,2.4vw,17.5px); color:#D8E0EE; font-weight:400; max-width:560px;
+  margin-bottom:30px; line-height:1.85;
+}
+.hero-sub strong{color:#fff; font-weight:700;}
+
+/* 표지 스탬프형 CTA */
+.hero-cta-row{display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin-bottom:40px;}
+.stamp-btn{
+  display:inline-flex; align-items:center; gap:10px;
+  background:var(--gold); color:#2A1E00; font-weight:800; font-size:16px;
+  padding:15px 26px; border-radius:10px; text-decoration:none;
+  border:2px solid #fff0; box-shadow:0 6px 0 #A87E15, 0 10px 24px rgba(0,0,0,.28);
+  transition:transform .12s, box-shadow .12s; font-family:var(--sans);
+}
+.stamp-btn:hover{transform:translateY(-2px);}
+.stamp-btn:active{transform:translateY(2px); box-shadow:0 3px 0 #A87E15;}
+.stamp-btn .arrow{font-size:19px;}
+.hero-cta-note{font-family:var(--mono); font-size:12.5px; color:#B9C6DE;}
+
+/* OMR 스타일 통계 원 */
+.omr-row{display:flex; gap:22px; flex-wrap:wrap;}
+.omr-stat{display:flex; align-items:center; gap:12px;}
+.omr-bubble{
+  width:58px; height:58px; border-radius:50%; flex-shrink:0;
+  border:2.5px solid var(--gold); display:flex; align-items:center; justify-content:center;
+  font-family:var(--serif); font-weight:900; font-size:16px; color:#fff;
+  background:rgba(255,255,255,.05);
+}
+.omr-label{font-size:12.5px; color:#C6D0E2; line-height:1.5;}
+.omr-label b{display:block; color:#fff; font-size:13.5px;}
+
+/* ══════════════════════════════════════════
+   NAV — 문항 번호 탭
+══════════════════════════════════════════ */
+.nav-wrap{
+  position:sticky; top:0; z-index:200; background:rgba(246,244,236,.94); backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--rule);
+}
+.nav-scroll{max-width:1040px; margin:0 auto; overflow-x:auto; scrollbar-width:none; padding:0 16px;}
+.nav-scroll::-webkit-scrollbar{display:none;}
+.nav-tabs{display:flex; gap:2px; padding:10px 0; min-width:max-content;}
+.nav-tab{
+  font-family:var(--mono); font-size:12.5px; font-weight:600; color:var(--ink-soft);
+  padding:8px 14px; border-radius:8px; text-decoration:none; white-space:nowrap;
+  transition:all .2s; border:1px solid transparent;
+}
+.nav-tab:hover{background:#fff; border-color:var(--rule);}
+.nav-tab.active{background:var(--navy); color:#fff;}
+.nav-tab .go-tab{color:var(--red); font-weight:800;}
+.nav-tab.active .go-tab{color:var(--gold);}
+
+/* ══════════════════════════════════════════
+   MAIN LAYOUT
+══════════════════════════════════════════ */
+.main{max-width:760px; margin:0 auto; padding:52px 20px 110px;}
+.section{margin-bottom:64px; scroll-margin-top:64px;}
+
+.sec-head{margin-bottom:26px; display:flex; gap:16px; align-items:flex-start;}
+.sec-num{
+  font-family:var(--mono); font-weight:700; font-size:13px; color:#fff;
+  background:var(--ink); width:40px; height:40px; border-radius:8px;
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.sec-title{font-family:var(--serif); font-weight:800; font-size:clamp(22px,4vw,28px); letter-spacing:-.3px; margin-bottom:5px;}
+.sec-desc{color:var(--ink-soft); font-size:14.5px;}
+
+.divider{
+  height:1px; margin:52px 0;
+  background:repeating-linear-gradient(to right, var(--rule) 0 6px, transparent 6px 12px);
+}
+
+/* ── 카드 (답안지 낱장 느낌: 왼쪽 빨간 여백선) ── */
+.card{
+  background:var(--card); border:1px solid var(--rule); border-left:3px solid var(--navy);
+  border-radius:10px; padding:26px 26px 24px; margin-bottom:18px;
+  box-shadow:0 1px 2px rgba(28,37,48,.04);
+}
+.card-head{display:flex; gap:14px; align-items:flex-start; margin-bottom:16px;}
+.card-badge{
+  width:38px; height:38px; border-radius:9px; display:flex; align-items:center; justify-content:center;
+  font-size:19px; flex-shrink:0; background:var(--paper); border:1px solid var(--rule-soft);
+}
+.card-title{font-weight:700; font-size:18px; margin-bottom:2px;}
+.card-desc{font-size:13.5px; color:var(--ink-soft);}
+.card p{font-size:14.5px; color:var(--ink-soft); line-height:1.9;}
+.card p mark{background:var(--gold-soft); padding:1px 5px; border-radius:3px; color:var(--ink);}
+.card p strong{color:var(--ink); font-weight:700;}
+
+/* ── 정오 비교 (채점 마크) ── */
+.grade-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:16px 0;}
+@media(max-width:560px){.grade-grid{grid-template-columns:1fr;}}
+.grade-box{border-radius:10px; padding:17px 18px; border:1px solid;}
+.grade-box.x{background:var(--red-soft); border-color:#EFC5BE;}
+.grade-box.o{background:var(--green-soft); border-color:#BFDECB;}
+.grade-label{display:flex; align-items:center; gap:8px; font-weight:700; font-size:12.5px; margin-bottom:10px; font-family:var(--mono);}
+.grade-mark{
+  width:22px; height:22px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center;
+  font-weight:900; font-size:14px; flex-shrink:0; border:2.4px solid currentColor;
+}
+.grade-box.x .grade-label{color:var(--red);}
+.grade-box.o .grade-label{color:var(--green);}
+.grade-text{font-size:13.8px; line-height:1.85; color:var(--ink);}
+
+/* ── 프롬프트 박스 (실제 입력할 질문 — 타자기/메모지 느낌) ── */
+.prompt-box{
+  background:var(--ink); border-radius:10px; padding:18px 20px; margin:14px 0; position:relative;
+}
+.prompt-tag{
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.08em; text-transform:uppercase;
+  color:#8FA3C4; margin-bottom:10px; display:flex; align-items:center; gap:8px;
+}
+.prompt-tag::before{content:'▸'; color:var(--gold);}
+.copy-btn{
+  position:absolute; top:14px; right:14px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.15);
+  color:#C6D0E2; font-family:var(--sans); font-size:11.5px; padding:5px 11px; border-radius:7px; cursor:pointer;
+  transition:all .15s;
+}
+.copy-btn:hover{background:rgba(255,255,255,.16); color:#fff;}
+.prompt-line{font-family:var(--mono); font-size:13px; color:#E4E9F2; line-height:1.9; padding:6px 0 6px 14px; border-left:2px solid #33455F;}
+.prompt-line + .prompt-line{margin-top:2px;}
+.prompt-group-label{font-family:var(--mono); font-size:11px; color:#7C93B8; margin:12px 0 4px; padding-left:14px;}
+.prompt-group-label:first-child{margin-top:0;}
+
+/* ── 팁/경고/성공/정보 박스 ── */
+.note{border-radius:10px; padding:17px 20px; margin:16px 0; border:1px solid; font-size:13.8px; line-height:1.9;}
+.note-title{font-weight:700; font-size:13px; margin-bottom:7px; display:flex; align-items:center; gap:7px;}
+.note.tip{background:var(--gold-soft); border-color:#EAD79A;}
+.note.tip .note-title{color:#8A6A0E;}
+.note.warn{background:var(--red-soft); border-color:#EFC5BE;}
+.note.warn .note-title{color:var(--red);}
+.note.info{background:#EAF0F8; border-color:#C4D3E8;}
+.note.info .note-title{color:var(--navy);}
+.note.good{background:var(--green-soft); border-color:#BFDECB;}
+.note.good .note-title{color:var(--green);}
+.note p, .note div{color:var(--ink-soft);}
+.note strong{color:var(--ink);}
+.note mark{background:rgba(217,166,42,.35); padding:0 4px; border-radius:3px;}
+
+/* ── 리스트 ── */
+.check-ul{list-style:none;}
+.check-ul li{padding:7px 0 7px 30px; position:relative; font-size:14.3px; color:var(--ink-soft);}
+.check-ul li::before{
+  content:''; position:absolute; left:0; top:11px; width:15px; height:15px; border-radius:50%;
+  border:2px solid var(--green);
+}
+.check-ul li strong{color:var(--ink);}
+
+/* ── 표 ── */
+.tbl-wrap{overflow-x:auto; margin:16px 0; border-radius:10px; border:1px solid var(--rule);}
+table{width:100%; border-collapse:collapse; font-size:13.5px; background:var(--card);}
+thead th{background:var(--paper); padding:12px 15px; font-weight:700; text-align:left; border-bottom:1.5px solid var(--rule); white-space:nowrap;}
+tbody td{padding:11px 15px; border-bottom:1px solid var(--rule-soft); color:var(--ink-soft);}
+tbody tr:last-child td{border-bottom:none;}
+
+/* ── 아코디언 ── */
+.acc{margin:16px 0;}
+.acc-item{border:1px solid var(--rule); border-radius:10px; margin-bottom:9px; overflow:hidden; background:var(--card);}
+.acc-item.open{border-color:var(--navy);}
+.acc-btn{
+  width:100%; background:none; border:none; padding:17px 20px; text-align:left; cursor:pointer;
+  display:flex; justify-content:space-between; align-items:center; gap:12px;
+  font-family:var(--sans); font-size:15px; font-weight:700; color:var(--ink);
+}
+.acc-btn:hover{background:var(--paper);}
+.acc-arrow{font-family:var(--mono); font-size:13px; color:var(--ink-faint); transition:transform .25s; flex-shrink:0;}
+.acc-item.open .acc-arrow{transform:rotate(180deg); color:var(--navy);}
+.acc-body{max-height:0; overflow:hidden; transition:max-height .4s ease;}
+.acc-item.open .acc-body{max-height:2400px;}
+.acc-content{padding:0 20px 20px;}
+
+/* ── 태그 ── */
+.tag{display:inline-block; font-family:var(--mono); font-size:11px; font-weight:700; padding:3px 9px; border-radius:5px; margin:2px 3px 2px 0;}
+
+/* ── 과목 섹션 subject accent ── */
+.subject{border-left:4px solid var(--sc); padding-left:0;}
+.subject .card{border-left-color:var(--sc);}
+.subject .sec-num{background:var(--sc);}
+.sub-korean{--sc:#1B3A6B;}
+.sub-math{--sc:#C1392B;}
+.sub-english{--sc:#276B4E;}
+.sub-history{--sc:#A9761E;}
+.sub-social{--sc:#6B4E9C;}
+.sub-science{--sc:#1B7A6C;}
+
+/* ── EDEN_GO 인라인 배너 (섹션 사이 반복 노출) ── */
+.eden-banner{
+  background:var(--navy); border-radius:14px; padding:24px 26px; margin:28px 0;
+  display:flex; align-items:center; justify-content:space-between; gap:18px; flex-wrap:wrap;
+  position:relative; overflow:hidden;
+}
+.eden-banner::before{
+  content:''; position:absolute; inset:0; opacity:.35;
+  background-image:radial-gradient(circle, rgba(255,255,255,.08) 1px, transparent 1.4px);
+  background-size:20px 20px;
+}
+.eden-banner-text{position:relative; z-index:1;}
+.eden-banner-title{color:#fff; font-family:var(--serif); font-weight:800; font-size:17.5px; margin-bottom:4px;}
+.eden-banner-sub{color:#B9C6DE; font-size:12.8px; font-family:var(--mono);}
+.eden-banner .stamp-btn{position:relative; z-index:1; font-size:14px; padding:12px 20px; box-shadow:0 4px 0 #A87E15, 0 8px 18px rgba(0,0,0,.25);}
+
+/* ── 루틴 타임라인 ── */
+.routine{display:flex; flex-direction:column; gap:14px; margin:20px 0;}
+.routine-row{display:flex; gap:20px; background:var(--card); border:1px solid var(--rule); border-radius:10px; padding:20px 22px;}
+.routine-row.weekend{border-color:#C9B8E0; background:#FAF7FD;}
+.routine-time{flex-shrink:0; min-width:78px; text-align:center;}
+.routine-time .t{font-family:var(--serif); font-weight:800; font-size:14px; color:var(--navy);}
+.routine-time .d{font-family:var(--mono); font-size:11px; color:var(--ink-faint); margin-top:3px;}
+.routine-body h4{font-size:15.5px; font-weight:700; margin-bottom:6px;}
+.routine-body p{font-size:13.6px; color:var(--ink-soft); line-height:1.85;}
+@media(max-width:520px){.routine-row{flex-direction:column; gap:8px;}.routine-time{text-align:left; display:flex; gap:8px; align-items:baseline;}}
+
+/* ── 자료 스탯 (연구 인용 박스) ── */
+.evidence{
+  background:#fff; border:1px dashed var(--rule); border-radius:10px; padding:16px 19px; margin:14px 0;
+  font-size:13px; color:var(--ink-soft); line-height:1.85;
+}
+.evidence b{color:var(--ink); font-family:var(--mono); font-size:12px; display:block; margin-bottom:5px; letter-spacing:.03em;}
+
+/* ── 마무리 섹션 ── */
+.closing{text-align:center; padding:40px 20px 8px;}
+.closing-stamp{
+  width:88px; height:88px; border-radius:50%; border:3px solid var(--red); margin:0 auto 22px;
+  display:flex; align-items:center; justify-content:center; transform:rotate(-8deg);
+  font-family:var(--serif); font-weight:900; font-size:15px; color:var(--red); line-height:1.25;
+}
+.closing h2{font-family:var(--serif); font-size:clamp(22px,4vw,29px); font-weight:800; margin-bottom:16px; line-height:1.4;}
+.closing p{color:var(--ink-soft); font-size:15px; max-width:480px; margin:0 auto 26px; line-height:1.95;}
+.closing p strong{color:var(--ink);}
+.tag-row{display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-bottom:32px;}
+
+/* ── FOOTER ── */
+.footer{background:var(--navy-deep); color:#8FA3C4; padding:36px 20px; text-align:center;}
+.footer-logo{font-family:var(--serif); font-weight:800; font-size:17px; color:#fff; margin-bottom:6px;}
+.footer p{font-size:12.5px; line-height:1.85;}
+.footer a{color:var(--gold); text-decoration:none; font-weight:600;}
+
+/* ── 플로팅 EDEN_GO 버튼 ── */
+.float-cta{
+  position:fixed; bottom:22px; right:22px; z-index:300;
+  display:flex; align-items:center; gap:9px; background:var(--red); color:#fff; text-decoration:none;
+  padding:13px 18px; border-radius:50px; font-weight:700; font-size:13.5px;
+  box-shadow:0 6px 20px rgba(193,57,43,.4); transition:transform .15s;
+  opacity:0; transform:translateY(12px) scale(.9); pointer-events:none;
+}
+.float-cta.visible{opacity:1; transform:translateY(0) scale(1); pointer-events:auto;}
+.float-cta:hover{transform:translateY(-2px) scale(1.03);}
+.float-cta .dot{width:7px; height:7px; border-radius:50%; background:#fff; animation:blink 1.8s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ── 반응형 ── */
+@media(max-width:640px){
+  .card{padding:20px 18px;}
+  .eden-banner{flex-direction:column; align-items:flex-start;}
+}
+
+/* ══════════════════════════════════════════
+   로그인 게이트 — 답안지 표지 스타일
+══════════════════════════════════════════ */
+#login-gate{
+  min-height:100vh; min-height:100dvh; background:var(--navy-deep);
+  background-image:linear-gradient(160deg,var(--navy-deep) 0%,var(--navy) 65%,#173059 100%);
+  display:flex; align-items:center; justify-content:center; padding:24px; position:relative; overflow:hidden;
+}
+#login-gate::after{
+  content:''; position:absolute; inset:0; opacity:.5; pointer-events:none;
+  background-image:radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1.4px);
+  background-size:26px 26px;
+}
+.lg-card{
+  position:relative; z-index:1; background:var(--paper); border-radius:16px;
+  padding:clamp(28px,5vw,42px) clamp(24px,5vw,38px); width:100%; max-width:420px;
+  box-shadow:0 20px 60px rgba(0,0,0,.35);
+}
+.lg-logo{text-align:center; margin-bottom:6px;}
+.lg-eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.12em; color:var(--ink-faint); text-transform:uppercase; margin-bottom:8px;}
+.lg-title{font-family:var(--serif); font-weight:900; font-size:30px; color:var(--ink);}
+.lg-title .go{color:var(--red);}
+.lg-sub{font-size:12.5px; color:var(--ink-soft); margin-top:6px;}
+.lg-divider{height:1px; margin:20px 0; background:repeating-linear-gradient(to right, var(--rule) 0 6px, transparent 6px 12px);}
+.lg-step{font-family:var(--mono); font-size:12px; font-weight:700; color:var(--navy); margin-bottom:8px; display:flex; align-items:center; gap:7px;}
+.lg-step .n{background:var(--navy); color:#fff; width:19px; height:19px; border-radius:5px; display:inline-flex; align-items:center; justify-content:center; font-size:10.5px; flex-shrink:0;}
+#login-gate input[type=text], #login-gate input[type=password]{
+  width:100%; padding:13px 15px; border:1.5px solid var(--rule); border-radius:9px;
+  font-size:15.5px; font-family:var(--sans); outline:none; background:#fff; color:var(--ink);
+  margin-bottom:14px; transition:border .2s, box-shadow .2s; -webkit-appearance:none;
+}
+#login-gate input:focus{border-color:var(--navy); box-shadow:0 0 0 3px rgba(27,58,107,.1);}
+#login-gate input::placeholder{color:#B8B2A0;}
+.lg-btn{
+  width:100%; padding:14px; background:var(--red); color:#fff; border:none; border-radius:9px;
+  font-size:15.5px; font-weight:700; cursor:pointer; font-family:var(--sans);
+  transition:background .2s, transform .1s;
+}
+.lg-btn:hover{background:#A32F23;}
+.lg-btn:active{transform:scale(.98);}
+.lg-btn:disabled{background:#C9A8A3; cursor:not-allowed;}
+.lg-ghost{
+  background:none; color:var(--ink-faint); border:1px solid var(--rule); border-radius:8px;
+  font-size:12px; padding:8px 16px; cursor:pointer; font-family:var(--sans); margin-top:10px;
+}
+.lg-ghost:hover{color:var(--ink-soft); border-color:var(--ink-faint);}
+.lg-msg{font-size:13px; padding:11px 15px; border-radius:8px; margin-bottom:14px; display:none; line-height:1.6;}
+.lg-msg.err{background:var(--red-soft); color:var(--red); border:1px solid #EFC5BE; display:block;}
+.lg-msg.loading{background:#EAF0F8; color:var(--navy); border:1px solid #C4D3E8; display:block;}
+#lg-sec-pw{display:none;}
+.lg-avatar{
+  width:56px; height:56px; border-radius:50%; background:var(--paper);
+  display:flex; align-items:center; justify-content:center; font-family:var(--serif);
+  font-size:22px; font-weight:900; color:var(--navy); margin:0 auto 12px; border:2.5px solid var(--rule);
+}
+.lg-ret-name{font-size:16px; font-weight:700; color:var(--ink); text-align:center; margin-bottom:4px;}
+.lg-ret-sub{font-size:12px; color:var(--ink-faint); text-align:center; margin-bottom:18px;}
+#app-content{display:none;}
+</style>
+</head>
+<body>
+
+<!-- ══════════════ 로그인 게이트 ══════════════ -->
+<div id="login-gate">
+  <div class="lg-card">
+    <div class="lg-logo">
+      <div class="lg-eyebrow">이든X학원 · 이든관리형학습센터</div>
+      <div class="lg-title">EDEN_<span class="go">GO</span></div>
+      <div class="lg-sub">완전정복 가이드 · 재학생 전용</div>
+    </div>
+    <hr class="lg-divider">
+    <div class="lg-msg" id="lg-msg"></div>
+
+    <div id="lg-sec-first">
+      <div class="lg-step"><span class="n">1</span>이름을 입력해주세요</div>
+      <input type="text" id="lg-inp-name" placeholder="예) 홍길동" maxlength="12" autocomplete="off"
+        onkeydown="if(event.key==='Enter') document.getElementById('lg-inp-pw1').focus()">
+      <div class="lg-step"><span class="n">2</span>비밀번호를 입력해주세요</div>
+      <input type="password" id="lg-inp-pw1" placeholder="비밀번호 입력" maxlength="10" autocomplete="off" inputmode="numeric"
+        onkeydown="if(event.key==='Enter') lgDoLogin()">
+      <button class="lg-btn" id="lg-btn1" onclick="lgDoLogin()">입장하기</button>
+    </div>
+
+    <div id="lg-sec-pw">
+      <div class="lg-avatar" id="lg-avatar"></div>
+      <div class="lg-ret-name" id="lg-ret-name"></div>
+      <div class="lg-ret-sub">비밀번호만 입력하면 바로 입장할 수 있어요</div>
+      <input type="password" id="lg-inp-pw2" placeholder="비밀번호 입력" maxlength="10" autocomplete="off" inputmode="numeric"
+        onkeydown="if(event.key==='Enter') lgDoLoginReturn()">
+      <button class="lg-btn" id="lg-btn2" onclick="lgDoLoginReturn()">입장하기</button>
+      <div style="text-align:center"><button class="lg-ghost" onclick="lgSwitchFirst()">다른 계정으로 로그인</button></div>
+    </div>
+  </div>
+</div>
+
+<div id="app-content">
+<div class="progress" id="progress"></div>
+
+<!-- ══════════════ HERO ══════════════ -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">이든X학원 · 이든관리형학습센터 발행 · 2026 개정판</div>
+    <h1 class="hero-title">EDEN_<span class="go">GO</span> 완전정복</h1>
+    <p class="hero-sub">
+      20년치 수능 기출과 3년치 수능특강·수능완성이 탑재된 AI 학습 도우미,
+      <strong>과목별로 200% 활용하는 법</strong>을 지금부터 정리했습니다.
+      막연히 질문만 던지지 말고, 이 안내서대로 써보세요.
+    </p>
+
+    <div class="hero-cta-row">
+      <a href="https://metastudy25.github.io/How-to-use-Eden_Go-2026/" target="_blank" rel="noopener" class="stamp-btn">
+        <span>EDEN_GO 바로 시작하기</span><span class="arrow">→</span>
+      </a>
+      <span class="hero-cta-note">이름·비밀번호 입력 후 바로 이용 가능</span>
+    </div>
+
+    <div class="omr-row">
+      <div class="omr-stat">
+        <div class="omr-bubble">20<span style="font-size:10px">년</span></div>
+        <div class="omr-label"><b>수능·모의고사</b>전 기출 문제</div>
+      </div>
+      <div class="omr-stat">
+        <div class="omr-bubble">3<span style="font-size:10px">년</span></div>
+        <div class="omr-label"><b>EBS 연계 교재</b>수능특강·수능완성</div>
+      </div>
+      <div class="omr-stat">
+        <div class="omr-bubble">전<span style="font-size:10px">과목</span></div>
+        <div class="omr-label"><b>국영수+탐구</b>한국사 포함 6영역</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ NAV ══════════════ -->
+<nav class="nav-wrap">
+  <div class="nav-scroll">
+    <div class="nav-tabs" id="navTabs">
+      <a href="https://metastudy25.github.io/How-to-use-Eden_Go-2026/" target="_blank" rel="noopener" class="nav-tab"><span class="go-tab">● EDEN_GO 열기</span></a>
+      <a href="#start" class="nav-tab active">시작하기</a>
+      <a href="#evidence" class="nav-tab">왜 효과적인가</a>
+      <a href="#principle" class="nav-tab">핵심 원칙</a>
+      <a href="#korean" class="nav-tab">국어</a>
+      <a href="#math" class="nav-tab">수학</a>
+      <a href="#english" class="nav-tab">영어</a>
+      <a href="#history" class="nav-tab">한국사</a>
+      <a href="#social" class="nav-tab">사탐</a>
+      <a href="#science" class="nav-tab">과탐</a>
+      <a href="#routine" class="nav-tab">하루 루틴</a>
+      <a href="#caution" class="nav-tab">주의사항</a>
+    </div>
+  </div>
+</nav>
+
+<main class="main">
+
+  <!-- ═════ 시작하기 ═════ -->
+  <section class="section" id="start">
+    <div class="sec-head">
+      <div class="sec-num">01</div>
+      <div>
+        <h2 class="sec-title">시작하기 전에</h2>
+        <p class="sec-desc">EDEN_GO가 뭔지, 일반 챗봇과 뭐가 다른지 먼저 이해하고 시작하세요</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="card-badge">📎</div>
+        <div>
+          <div class="card-title">EDEN_GO란?</div>
+          <div class="card-desc">이든X학원이 구축한 전용 AI 학습 도우미</div>
+        </div>
+      </div>
+      <p>
+        EDEN_GO는 <mark>학원이 미리 넣어둔 자료만 근거로 대답하는 맞춤형 AI</mark>입니다.
+        ChatGPT처럼 인터넷 전체를 뒤져 아무 말이나 하는 게 아니라,
+        <strong>여러분이 실제로 풀게 될 기출문제·수능특강·교과서 안에서만</strong> 찾고, 정리하고, 설명합니다.
+        그래서 수능 공부에 훨씬 안전하고 정확합니다.
+      </p>
+
+      <div class="eden-banner" style="margin-top:20px">
+        <div class="eden-banner-text">
+          <div class="eden-banner-title">지금 바로 접속해서 확인해보세요</div>
+          <div class="eden-banner-sub">login → 과목별 질문 가이드 105문항 제공</div>
+        </div>
+        <a href="https://metastudy25.github.io/How-to-use-Eden_Go-2026/" target="_blank" rel="noopener" class="stamp-btn">EDEN_GO 열기 →</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ═════ 근거 있는 이유 (연구 보강 섹션) ═════ -->
+  <section class="section" id="evidence">
+    <div class="sec-head">
+      <div class="sec-num">02</div>
+      <div>
+        <h2 class="sec-title">왜 이 방식이 효과적인가</h2>
+        <p class="sec-desc">막연한 팁이 아니라, 학습 연구가 뒷받침하는 이유입니다</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="card-badge">🧠</div>
+        <div>
+          <div class="card-title">1. "다시 읽기"보다 "스스로 꺼내기"</div>
+          <div class="card-desc">액티브 리콜(능동적 회상)의 힘</div>
+        </div>
+      </div>
+      <p>
+        형광펜을 긋고 노트를 다시 읽는 공부는 '알고 있다'는 착각을 줍니다. 실제로는 <mark>기억에서
+        정보를 직접 꺼내보는 인출 연습</mark>이 훨씬 오래 남습니다. EDEN_GO의 퀴즈·플래시카드·꼬리 질문
+        기능은 바로 이 원리를 위해 씁니다 — 답을 읽는 게 아니라, 답을 스스로 만들어내게 하세요.
+      </p>
+      <div class="evidence">
+        <b>연구 배경</b>
+        인지심리학에서는 이를 '시험 효과(Testing Effect)'라 부릅니다. 같은 시간을 공부해도 반복
+        읽기보다 스스로 인출을 시도한 학생의 장기 기억이 뚜렷하게 높다는 결과가 여러 차례 확인됐습니다.
+        EDEN_GO에게 "요약해줘" 대신 "나한테 물어봐줘"라고 요청하는 이유가 여기에 있습니다.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="card-badge">🔍</div>
+        <div>
+          <div class="card-title">2. 정답이 아니라 "근거"를 확인하는 습관</div>
+          <div class="card-desc">출처 인용 기능을 검산 도구로 쓰기</div>
+        </div>
+      </div>
+      <p>
+        EDEN_GO가 답할 때마다 <mark>어느 기출, 어느 문단에서 가져왔는지</mark> 함께 표시됩니다.
+        이 기능을 그냥 넘기지 말고, 실제 지문·문제와 대조하는 습관을 들이세요. 수능은 결국
+        '근거를 정확히 짚는 시험'이고, 이 습관 자체가 실전 훈련이 됩니다.
+      </p>
+      <div class="evidence">
+        <b>연구 배경</b>
+        업로드 자료에서만 답을 생성하고 출처를 함께 제시하는 방식은 잘못된 정보(할루시네이션)를
+        크게 줄인다는 것이 여러 연구에서 확인됐습니다. 다만 100% 완벽하지는 않으므로,
+        <strong>출처를 클릭해 원문을 직접 확인하는 것</strong>이 가장 안전한 검증법입니다.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="card-badge">💬</div>
+        <div>
+          <div class="card-title">3. 정답을 바로 받지 말고, 질문으로 유도하기</div>
+          <div class="card-desc">소크라테스식 대화 활용법</div>
+        </div>
+      </div>
+      <p>
+        "정답이 뭐야?"라고 묻는 순간 사고가 멈춥니다. 대신 <mark>"첫 번째 힌트만 줘", "내 풀이가
+        맞는지만 확인해줘"</mark>처럼 단계적으로 질문하면, AI가 답을 알려주는 존재에서
+        '옆에서 되물어주는 과외 선생님'으로 바뀝니다. 이 방식이 실제로 개념 이해도를 더 깊게 만든다는
+        점이 최근 AI 튜터링 연구에서도 보고되고 있습니다.
+      </p>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="card-badge">🎧</div>
+        <div>
+          <div class="card-title">4. 같은 내용을 다른 형태로 반복 노출</div>
+          <div class="card-desc">텍스트 + 오디오 + 퀴즈의 반복 학습 효과</div>
+        </div>
+      </div>
+      <p>
+        같은 개념을 <strong>읽고 → 듣고 → 퀴즈로 확인</strong>하는 것만으로 기억 정착률이 올라갑니다.
+        통학 시간에는 오디오 요약으로 배경지식을 흡수하고, 책상에서는 텍스트로 근거를 확인하고,
+        마무리는 퀴즈로 점검하세요. 형태를 바꿔가며 반복하는 것 자체가 하나의 학습 전략입니다.
+      </p>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ═════ 핵심 원칙 ═════ -->
+  <section class="section" id="principle">
+    <div class="sec-head">
+      <div class="sec-num">03</div>
+      <div>
+        <h2 class="sec-title">AI 학습 핵심 원칙 5가지</h2>
+        <p class="sec-desc">이것만 지켜도 EDEN_GO 활용 효과가 눈에 띄게 달라집니다</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="card-badge">1️⃣</div>
+        <div><div class="card-title">"요약해줘"보다 "근거 찾아줘"</div><div class="card-desc">수능은 요약 시험이 아니라 근거 시험입니다</div></div>
+      </div>
+      <div class="grade-grid">
+        <div class="grade-box x">
+          <div class="grade-label"><span class="grade-mark">✕</span>시간만 낭비하는 질문</div>
+          <div class="grade-text">"이 단원 요약해줘"<br>"이 지문 핵심 알려줘"<br>"답이 뭐야?"</div>
+        </div>
+        <div class="grade-box o">
+          <div class="grade-label"><span class="grade-mark">○</span>점수가 오르는 질문</div>
+          <div class="grade-text">"정답의 근거 문장을 찾아줘"<br>"②번이 왜 틀렸는지 단어 단위로 설명해줘"<br>"헷갈리는 개념과 비교해줘"</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="card-badge">2️⃣</div>
+        <div><div class="card-title">큰 질문 말고 작은 질문</div><div class="card-desc">한 번에 다 묻지 말고 쪼개서 물어보세요</div></div>
+      </div>
+      <div class="grade-grid">
+        <div class="grade-box x">
+          <div class="grade-label"><span class="grade-mark">✕</span>너무 넓은 질문</div>
+          <div class="grade-text">"미적분 전체 설명해줘"<br>"이 지문 다 분석해줘"</div>
+        </div>
+        <div class="grade-box o">
+          <div class="grade-label"><span class="grade-mark">○</span>딱 맞는 좁은 질문</div>
+          <div class="grade-text">"3문단의 핵심 주장만 말해줘"<br>"②번이 왜 틀렸는지만 설명해줘"</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="card-badge">3️⃣</div>
+        <div><div class="card-title">정답 확인용 ✕ → 오답 분석용 ○</div><div class="card-desc">왜 틀렸는지, 다음에 또 틀릴 곳이 어딘지 파악하세요</div></div>
+      </div>
+      <div class="prompt-box">
+        <div class="prompt-tag">이렇게 질문하세요</div>
+        <div class="prompt-line">내 오답을 개념 부족 / 조건 해석 실패 / 계산 실수 / 시간 부족으로 분류해줘</div>
+        <div class="prompt-line">내가 이 문제를 틀릴 만한 사고 흐름을 재구성해줘</div>
+        <div class="prompt-line">다음에 풀 때 체크할 3단계 점검표를 만들어줘</div>
+        <button class="copy-btn" onclick="copyPrompt(this)">복사</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="card-badge">4️⃣</div>
+        <div><div class="card-title">EDEN_GO ≠ 내 개인 오답노트</div><div class="card-desc">학원 자료실과 나만의 약점 정리는 분리하세요</div></div>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>구분</th><th>EDEN_GO (학원 제공)</th><th>내 오답노트 (개인 정리)</th></tr></thead>
+          <tbody>
+            <tr><td><strong>역할</strong></td><td>전범위 기출·수특 DB</td><td>나만의 약점 DB</td></tr>
+            <tr><td><strong>활용 시기</strong></td><td>개념·유형 학습할 때</td><td>시험 직전 마무리할 때</td></tr>
+            <tr><td><strong>정리 방식</strong></td><td>질문하고 근거 확인</td><td>매일 5줄 이내 압축</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="card-badge">5️⃣</div>
+        <div><div class="card-title">최종 목표는 "시험 직전 1장 요약"</div><div class="card-desc">자료가 많아지면 결국 안 봅니다. 압축이 관건입니다</div></div>
+      </div>
+      <ul class="check-ul">
+        <li><strong>과목별 핵심 요약 1장</strong></li>
+        <li>단원별 <strong>함정 체크리스트</strong></li>
+        <li>내가 자주 틀리는 유형 <strong>오답 패턴표</strong></li>
+        <li>수특 ↔ 기출 <strong>연계 비교표</strong></li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ═════ 국어 ═════ -->
+  <section class="section subject sub-korean" id="korean">
+    <div class="sec-head">
+      <div class="sec-num">04</div>
+      <div><h2 class="sec-title">📘 국어 영역</h2><p class="sec-desc">지문 구조화 + 오답 함정 파악 = 국어 고득점의 핵심</p></div>
+    </div>
+
+    <div class="acc">
+      <div class="acc-item open">
+        <button class="acc-btn" onclick="toggleAcc(this)"><span>문학 — 작품 '묶음 비교'로 연계 대비하기</span><span class="acc-arrow">▾</span></button>
+        <div class="acc-body"><div class="acc-content">
+          <p style="font-size:14.3px;color:var(--ink-soft);margin-bottom:14px;line-height:1.9">
+            문학은 작품을 하나하나 외우기보다 <mark>주제·정서·표현 방식이 비슷한 작품끼리 묶어서 비교</mark>하는
+            학생이 훨씬 강합니다. EDEN_GO에는 수특 작품과 기출 작품이 모두 들어있으니 연결해달라고 하세요.
+          </p>
+          <div class="prompt-box">
+            <div class="prompt-tag">이렇게 질문하세요</div>
+            <div class="prompt-line">이 수능특강 작품과 주제·정서가 비슷한 기출 작품을 찾아서 비교표로 만들어줘 (출처 표기)</div>
+            <div class="prompt-line">이 작품의 핵심 정서와 표현법이 선지로 바뀌면 어떤 식인지 기출에서 찾아 보여줘</div>
+            <div class="prompt-line">이 소설의 인물 관계도를 그리고, 갈등 구조를 한 문장으로 정리해줘</div>
+            <button class="copy-btn" onclick="copyPrompt(this)">복사</button>
+          </div>
+          <div class="note tip">
+            <div class="note-title">💡 특히 효과가 큰 영역</div>
+            <div>고전시가는 정서(이별·유배·연군)가 겹치는 작품끼리, 현대소설은 서술 시점이 비슷한 작품끼리 묶어보세요.</div>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="acc-item">
+        <button class="acc-btn" onclick="toggleAcc(this)"><span>독서(비문학) — 문단 역할 분석 + 배경지식 보충</span><span class="acc-arrow">▾</span></button>
+        <div class="acc-body"><div class="acc-content">
+          <p style="font-size:14.3px;color:var(--ink-soft);margin-bottom:14px;line-height:1.9">
+            독서는 배경지식보다 <mark>문단별 역할을 잡는 능력</mark>이 중요합니다. 경제·법·과학 지문이
+            낯설다면 "중학생도 이해하게" 쪼개서 설명해달라고 하세요.
+          </p>
+          <div class="prompt-box">
+            <div class="prompt-tag">이렇게 질문하세요</div>
+            <div class="prompt-line">이 지문의 각 문단 역할을 한 줄씩 정리해줘 (도입/정의/원인/비교/결론)</div>
+            <div class="prompt-line">이 개념을 예시를 들어 중학생도 이해할 수 있게 설명해줘</div>
+            <div class="prompt-line">이 지문에서 반드시 표시해야 할 연결어·전환 지점을 모두 찾아줘</div>
+            <button class="copy-btn" onclick="copyPrompt(this)">복사</button>
+          </div>
+          <div class="note info">
+            <div class="note-title">🔗 꼬리 질문 활용법</div>
+            <div>"좀 더 쉽게 → 예시를 들어서 → 반대의 경우는? → 이걸 선지로 바꾸면?" 이렇게 4~5번
+            파고들면 웬만한 고난도 지문도 소화할 수 있습니다.</div>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="acc-item">
+        <button class="acc-btn" onclick="toggleAcc(this)"><span>화법과 작문 / 언어와 매체 — 함정 유형 정리</span><span class="acc-arrow">▾</span></button>
+        <div class="acc-body"><div class="acc-content">
+          <div class="prompt-box">
+            <div class="prompt-tag">이렇게 질문하세요</div>
+            <div class="prompt-line">이 자료에서 조건 불일치·의도 왜곡·정보 누락 오답 선지 유형을 찾아서 분류해줘</div>
+            <div class="prompt-line">이 문법 개념과 자주 혼동되는 개념을 비교표로 만들어줘 (예: 피동과 사동)</div>
+            <button class="copy-btn" onclick="copyPrompt(this)">복사</button>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="acc-item">
+        <button class="acc-btn" onclick="toggleAcc(this)"><span>국어 최강 팁 — 오답 선지 분석 훈련</span><span class="acc-arrow">▾</span></button>
+        <div class="acc-body"><div class="acc-content">
+          <p style="font-size:14.3px;color:var(--ink-soft);margin-bottom:14px;line-height:1.9">
+            국어 고득점의 비결은 <mark>"왜 이 보기가 그럴듯한데 틀렸는지"</mark>를 분석하는 것입니다.
+          </p>
+          <div class="prompt-box">
+            <div class="prompt-tag">이렇게 질문하세요</div>
+            <div class="prompt-line">이 기출 문제의 5개 선지를 하나씩, 왜 맞는지·왜 틀렸는지 근거와 함께 설명해줘</div>
+            <div class="prompt-line">이 유형에서 반복적으로 등장하는 오답 패턴을 이 자료에서 찾아 정리해줘</div>
+            <button class="copy-btn" onclick="copyPrompt(this)">복사</button>
+          </div>
+          <div class="note good"><div class="note-title">🏆 국어 핵심 한 줄</div><div><strong>정답 찾기보다 '오답이 왜 그럴듯했는지' 분석하는 데 EDEN_GO를 쓰세요.</strong></div></div>
+        </div></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ═════ 수학 ═════ -->
+  <section class="section subject sub-math" id="math">
+    <div class="sec-head">
+      <div class="sec-num">05</div>
+      <div><h2 class="sec-title">📕 수학 영역</h2><p class="sec-desc">취약 단원 진단 + 킬러 문항 단계별 사고 = 수학 등급 점프</p></div>
+    </div>
+
+    <div class="acc">
+      <div class="acc-item open">
+        <button class="acc-btn" onclick="toggleAcc(this)"><span>취약 단원 정확히 찾기</span><span class="acc-arrow">▾</span></button>
+        <div class="acc-body"><div class="acc-content">
+          <p style="font-size:14.3px;color:var(--ink-soft);margin-bottom:14px;line-height:1.9">
+            "미적분이 약해요"는 너무 넓습니다. <mark>정확히 어떤 세부 개념에서, 어떤 실수를</mark>
+            하는지 알아야 공부가 됩니다.
+          </p>
+          <div class="prompt-box">
+            <div class="prompt-tag">이렇게 질문하세요</div>
+            <div class="prompt-line">이 자료에서 수열 단원 기출을 찾아서 유형별로 분류해줘</div>
+            <div class="prompt-line">내가 방금 푼 문제들을 보고 오답 원인을 개념오류·계산실수·조건누락으로 분류해줘</div>
+            <button class="copy-btn" onclick="copyPrompt(this)">복사</button>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="acc-item">
+        <button class="acc-btn" onclick="toggleAcc(this)"><span>킬러·준킬러 — '힌트 모드'로 사고력 키우기</span><span class="acc-arrow">▾</span></button>
+        <div class="acc-body"><div class="acc-content">
+          <p style="font-size:14.3px;color:var(--ink-soft);margin-bottom:14px;line-height:1.9">
+            정답을 바로 보지 않고 <mark>힌트를 단계적으로</mark> 얻는 것이 핵심입니다.
+            전체 풀이를 한 번에 보면 "이해한 척"에 빠지기 쉽습니다.
+          </p>
+          <div class="routine" style="margin:10px 0 16px">
+            <div class="routine-row"><div class="routine-time"><div class="t">STEP 1</div></div><div class="routine-body"><p>"정답은 말하지 말고 첫 번째 아이디어만 알려줘"</p></div></div>
+            <div class="routine-row"><div class="routine-time"><div class="t">STEP 2</div></div><div class="routine-body"><p>"여기까지 왔는데, 다음 단계에서 어떤 식 변형을 해야 하는지만 알려줘"</p></div></div>
+            <div class="routine-row"><div class="routine-time"><div class="t">STEP 3</div></div><div class="routine-body"><p>"내가 이렇게 풀었는데 맞는지 확인해줘"</p></div></div>
+            <div class="routine-row"><div class="routine-time"><div class="t">STEP 4</div></div><div class="routine-body"><p>"전체 풀이를 보여주고 내 풀이와 어디서 갈렸는지 표시해줘"</p></div></div>
+          </div>
+          <div class="note warn">
+            <div class="note-title">⚠ 절대 하면 안 되는 것</div>
+            <div><strong>"풀이 전체 보여줘" → 이해했다고 착각 → 실전에서 못 풂.</strong>
+            반드시 <mark>힌트 → 시도 → 확인</mark> 순서로 쓰세요.</div>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="acc-item">
+        <button class="acc-btn" onclick="toggleAcc(this)"><span>공식 암기 — '조건 → 공식' 연결 플래시카드</span><span class="acc-arrow">▾</span></button>
+        <div class="acc-body"><div class="acc-content">
+          <p style="font-size:14.3px;color:var(--ink-soft);margin-bottom:14px;line-height:1.9">
+            공식을 외우는 것보다 <mark>어떤 조건에서 그 공식을 떠올려야 하는지</mark>가 중요합니다.
+          </p>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>앞면 (문제 조건)</th><th>뒷면 (떠올릴 개념)</th></tr></thead>
+              <tbody>
+                <tr><td>정적분으로 정의된 함수 + 미분 가능</td><td>구간별 미분 + 연속 조건 확인</td></tr>
+                <tr><td>삼각함수의 최댓값·최솟값</td><td>합성 공식으로 변환</td></tr>
+                <tr><td>수열 aₙ₊₁ = f(aₙ) 형태</td><td>귀납적 정의 → 나열 후 규칙 추정</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="prompt-box">
+            <div class="prompt-tag">이렇게 질문하세요</div>
+            <div class="prompt-line">이 자료에서 이 공식이 쓰인 발문 조건을 찾아서 '조건-공식' 플래시카드로 만들어줘</div>
+            <button class="copy-btn" onclick="copyPrompt(this)">복사</button>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="acc-item">
+        <button class="acc-btn" onclick="toggleAcc(this)"><span>5줄 오답노트 — 짧고 강하게</span><span class="acc-arrow">▾</span></button>
+        <div class="acc-body"><div class="acc-content">
+          <div class="prompt-box">
+            <div class="prompt-tag">이렇게 질문하세요</div>
+            <div class="prompt-line">이 문제 오답노트를 이 형식으로 정리해줘: ① 내가 틀린 이유(1줄) ② 정답 핵심 발상(1줄) ③ 다음에 확인할 체크포인트(2개) ④ 유사 기출 번호</div>
+            <button class="copy-btn" onclick="copyPrompt(this)">복사</button>
+          </div>
+          <div class="note good"><div class="note-title">🏆 수학 핵심 한 줄</div><div><strong>EDEN_GO는 '풀이를 받는 도구'가 아니라 '생각을 한 단계씩 꺼내는 코치'로 쓰세요.</strong></div></div>
+        </div></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ═════ 영어 ═════ -->
+  <section class="section subject sub-english" id="english">
+    <div class="sec-head">
+      <div class="sec-num">06</div>
+      <div><h2 class="sec-title">📗 영어 영역</h2><p class="sec-desc">어휘 자동화 + 논리 구조 파악 + EBS 변형 훈련</p></div>
+    </div>
+
+    <div class="acc">
+      <div class="acc-item open">
+        <button class="acc-btn" onclick="toggleAcc(this)"><span>어휘·구문 — '모르는 단어장' 자동 누적</span><span class="acc-arrow">▾</span></button>
+        <div class="acc-body"><div class="acc-content">
+          <div class="prompt-box">
+            <div class="prompt-tag">이렇게 질문하세요</div>
+            <div class="prompt-line">이 자료의 기출·수특에서 자주 나온 고난도 어휘를 찾아서 난도별로 정리해줘</div>
+            <div class="prompt-line">이 단어가 이 지문에서 어떤 의미로 쓰였는지 예문과 함께 보여줘</div>
+            <div class="prompt-line">이 지문 핵심 어휘 10개를 플래시카드로 만들어줘 (영-한, 예문 포함)</div>
+            <button class="copy-btn" onclick="copyPrompt(this)">복사</button>
+          </div>
+          <div class="note tip">
+            <div class="note-title">💡 단어 공부 루틴</div>
+            <div>지문 읽기 → 모르는 단어 질문 → 개인 단어장에 저장 → 매일 아침 플래시카드 복습 → 아는 단어는 삭제, 모르는 것만 유지</div>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="acc-item">
+        <button class="acc-btn" onclick="toggleAcc(this)"><span>구문 분석 — 끊어 읽기와 논리 구조 파악</span><span class="acc-arrow">▾</span></button>
+        <div class="acc-body"><div class="acc-content">
+          <p style="font-size:14.3px;color:var(--ink-soft);margin-bottom:14px;line-height:1.9">
+            해석이 안 되는 원인의 상당수는 단어가 아니라 <mark>문장 구조가 안 보이기 때문</mark>입니다.
+          </p>
+          <div class="prompt-box">
+            <div class="prompt-tag">이렇게 질문하세요</div>
+            <div class="prompt-line">이 문장을 끊어 읽기 형태로 표시하고 주어·동사·목적어를 구분해줘</div>
+            <div class="prompt-line">이 지문에서 관계사·분사구문·동격이 쓰인 문장을 모두 찾아 구조를 설명해줘</div>
+            <button class="copy-btn" onclick="copyPrompt(this)">복사</button>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="acc-item">
+        <button class="acc-btn" onclick="toggleAcc(this)"><span>빈칸·순서·삽입 — 논리 신호어 중심 분석</span><span class="acc-arrow">▾</span></button>
+        <div class="acc-body"><div class="acc-content">
+          <p style="font-size:14.3px;color:var(--ink-soft);margin-bottom:14px;line-height:1.9">
+            고난도 유형의 핵심은 단어가 아니라 <mark>however, therefore, in contrast 같은
+            논리 신호어와 글의 구조</mark>입니다.
+          </p>
+          <div class="prompt-box">
+            <div class="prompt-tag">이렇게 질문하세요</div>
+            <div class="prompt-line">이 지문에서 전환어·연결어·논리 신호어를 모두 찾아서 표시해줘</div>
+            <div class="prompt-line">이 지문의 구조를 주장-근거-예시-결론으로 구분해줘</div>
+            <div class="prompt-line">이 자료에서 41~45번 장문 독해 지문을 찾아서 문단 구조와 주제를 정리해줘</div>
+            <button class="copy-btn" onclick="copyPrompt(this)">복사</button>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="acc-item">
+        <button class="acc-btn" onclick="toggleAcc(this)"><span>EBS 연계 — 지문 변형 문제 만들기</span><span class="acc-arrow">▾</span></button>
+        <div class="acc-body"><div class="acc-content">
+          <div class="prompt-box">
+            <div class="prompt-tag">이렇게 질문하세요</div>
+            <div class="prompt-line">이 수특 지문을 빈칸 추론 문제로 바꿔줘. 정답 근거와 오답 매력 포인트도 함께 써줘</div>
+            <div class="prompt-line">같은 지문으로 순서 배열 문제도 만들어줘</div>
+            <button class="copy-btn" onclick="copyPrompt(this)">복사</button>
+          </div>
+          <div class="note warn">
+            <div class="note-title">⚠ 변형 문제 주의사항</div>
+            <div>연습용으로 좋지만 <strong>실제 평가원 문체와 100% 같지 않습니다.</strong>
+            최종 기준은 언제나 <mark>평가원 기출</mark>로 확인하세요.</div>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="acc-item">
+        <button class="acc-btn" onclick="toggleAcc(this)"><span>오디오 요약 — 통학 시간에 배경지식 흡수</span><span class="acc-arrow">▾</span></button>
+        <div class="acc-body"><div class="acc-content">
+          <p style="font-size:14.3px;color:var(--ink-soft);line-height:1.9">
+            철학·심리학·추상적 과학 소재는 영어 이전에 <strong>내용 자체가 어렵습니다.</strong>
+            오디오 요약 기능으로 두 진행자가 핵심을 한국어로 풀어주니, 통학 시간에 들으며
+            배경지식을 미리 쌓아두세요.
+          </p>
+          <div class="note good" style="margin-top:14px"><div class="note-title">🏆 영어 핵심 한 줄</div><div><strong>해석 연습보다 '근거 찾는 독해 습관'을 만드는 데 EDEN_GO를 쓰세요.</strong></div></div>
+        </div></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ═════ 한국사 ═════ -->
+  <section class="section subject sub-history" id="history">
+    <div class="sec-head">
+      <div class="sec-num">07</div>
+      <div><h2 class="sec-title">📙 한국사</h2><p class="sec-desc">흐름 + 사료 + 비교 = 한국사 만점의 공식</p></div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="card-badge">📅</div><div><div class="card-title">시대 흐름 정리 — 타임라인 & 비교표</div><div class="card-desc">한국사는 암기가 아니라 '흐름과 비교'의 과목</div></div></div>
+      <div class="prompt-box">
+        <div class="prompt-tag">이렇게 질문하세요</div>
+        <div class="prompt-line">이 자료에서 개항기부터 대한제국까지 주요 사건을 찾아 타임라인으로 정리해줘</div>
+        <div class="prompt-line">흥선대원군 정책·갑신정변·갑오개혁·독립협회를 비교표로 만들어줘 (출처 표기)</div>
+        <div class="prompt-line">이 자료에서 근현대사 주요 조약을 체결 순서대로 찾아 핵심 내용 1줄씩 정리해줘</div>
+        <button class="copy-btn" onclick="copyPrompt(this)">복사</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="card-badge">📜</div><div><div class="card-title">사료 분석 훈련</div><div class="card-desc">사료에서 시대와 주제를 뽑아내는 힘</div></div></div>
+      <div class="prompt-box">
+        <div class="prompt-tag">이렇게 질문하세요</div>
+        <div class="prompt-line">이 사료의 시대를 판별할 수 있는 핵심 단어를 찾아서 표시해줘</div>
+        <div class="prompt-line">이 자료에서 이 사료와 비슷한 시기의 다른 사료를 찾아 차이점을 비교해줘</div>
+        <button class="copy-btn" onclick="copyPrompt(this)">복사</button>
+      </div>
+      <div class="note good"><div class="note-title">🏆 한국사 핵심 한 줄</div><div><strong>암기과목이 아닙니다. '비교와 흐름'을 잡는 과목입니다.</strong></div></div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ═════ 사회탐구 ═════ -->
+  <section class="section subject sub-social" id="social">
+    <div class="sec-head">
+      <div class="sec-num">08</div>
+      <div><h2 class="sec-title">📓 사회탐구</h2><p class="sec-desc">개념 비교 + 선지 O/X + 자료 해석 = 사탐 만점 전략</p></div>
+    </div>
+
+    <div class="acc">
+      <div class="acc-item open">
+        <button class="acc-btn" onclick="toggleAcc(this)"><span>개념 비교표 만들기</span><span class="acc-arrow">▾</span></button>
+        <div class="acc-body"><div class="acc-content">
+          <p style="font-size:14.3px;color:var(--ink-soft);margin-bottom:14px;line-height:1.9">
+            사탐은 비슷한 개념이 많아 <mark>정확한 비교 없이는 선지 판단이 흔들립니다.</mark>
+          </p>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>과목</th><th>자주 비교되는 개념</th></tr></thead>
+              <tbody>
+                <tr><td><span class="tag" style="background:#EFE8F7;color:#6B4E9C">윤리</span></td><td>칸트 vs 공리주의 / 의무론 vs 결과론</td></tr>
+                <tr><td><span class="tag" style="background:#EAF0F8;color:#1B3A6B">사회문화</span></td><td>양적 연구 vs 질적 연구 / 기능론 vs 갈등론</td></tr>
+                <tr><td><span class="tag" style="background:#E9F4EC;color:#276B4E">경제</span></td><td>시장 실패 vs 정부 실패 / GDP vs GNI</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="prompt-box">
+            <div class="prompt-tag">이렇게 질문하세요</div>
+            <div class="prompt-line">이 자료에서 이 단원 핵심 개념을 헷갈리는 개념끼리 비교표로 만들어줘</div>
+            <div class="prompt-line">이 자료에서 기능론과 갈등론이 실제 선지로 어떻게 출제됐는지 찾아서 보여줘</div>
+            <button class="copy-btn" onclick="copyPrompt(this)">복사</button>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="acc-item">
+        <button class="acc-btn" onclick="toggleAcc(this)"><span>선지 O/X 훈련 — 사탐 최강의 학습법</span><span class="acc-arrow">▾</span></button>
+        <div class="acc-body"><div class="acc-content">
+          <p style="font-size:14.3px;color:var(--ink-soft);margin-bottom:14px;line-height:1.9">
+            탐구 영역은 문제를 통째로 푸는 것보다 <mark>선지 하나하나를 판정하는 훈련</mark>이 효과적입니다.
+          </p>
+          <div class="prompt-box">
+            <div class="prompt-tag">이렇게 질문하세요</div>
+            <div class="prompt-line">이 자료의 기출에서 이 단원 관련 선지만 찾아서 O/X 퀴즈로 만들어줘</div>
+            <div class="prompt-line">틀린 선지는 어떤 단어 때문에 틀렸는지 밑줄 쳐서 설명해줘</div>
+            <button class="copy-btn" onclick="copyPrompt(this)">복사</button>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="acc-item">
+        <button class="acc-btn" onclick="toggleAcc(this)"><span>자료 해석 — 도표·그래프 읽기 루틴</span><span class="acc-arrow">▾</span></button>
+        <div class="acc-body"><div class="acc-content">
+          <div class="prompt-box">
+            <div class="prompt-tag">이렇게 질문하세요</div>
+            <div class="prompt-line">이 자료에서 자료 해석형 문제의 그래프·표 유형을 찾아서 정리해줘</div>
+            <div class="prompt-line">이 도표의 보기 ㄱ, ㄴ, ㄷ을 하나씩 이 자료 근거로 검증해줘</div>
+            <button class="copy-btn" onclick="copyPrompt(this)">복사</button>
+          </div>
+          <div class="note good"><div class="note-title">🏆 사탐 핵심 한 줄</div><div><strong>'개념 암기'보다 '정확한 선지 판정' 훈련에 EDEN_GO를 쓰세요.</strong></div></div>
+        </div></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ═════ 과학탐구 ═════ -->
+  <section class="section subject sub-science" id="science">
+    <div class="sec-head">
+      <div class="sec-num">09</div>
+      <div><h2 class="sec-title">📒 과학탐구</h2><p class="sec-desc">개념 구조화 + 실험·자료 패턴화 + 보기 검증 훈련</p></div>
+    </div>
+
+    <div class="acc">
+      <div class="acc-item open">
+        <button class="acc-btn" onclick="toggleAcc(this)"><span>개념 구조화 — 연결해서 이해하기</span><span class="acc-arrow">▾</span></button>
+        <div class="acc-body"><div class="acc-content">
+          <p style="font-size:14.3px;color:var(--ink-soft);margin-bottom:14px;line-height:1.9">
+            과탐은 단원이 깊고 개념 간 연결이 많아 <mark>구조를 먼저 잡으면</mark> 효과가 큽니다.
+          </p>
+          <div class="prompt-box">
+            <div class="prompt-tag">이렇게 질문하세요</div>
+            <div class="prompt-line">이 자료에서 이 단원 핵심 개념을 찾아서 개념 간 인과관계와 함께 정리해줘</div>
+            <div class="prompt-line">이 단원에서 시험에 자주 나오는 핵심 키워드를 찾아 관계를 정리해줘</div>
+            <button class="copy-btn" onclick="copyPrompt(this)">복사</button>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="acc-item">
+        <button class="acc-btn" onclick="toggleAcc(this)"><span>실험·그래프 — 자료 해석 패턴 훈련</span><span class="acc-arrow">▾</span></button>
+        <div class="acc-body"><div class="acc-content">
+          <div class="prompt-box">
+            <div class="prompt-tag">이렇게 질문하세요</div>
+            <div class="prompt-line">이 자료에서 이 실험 문항의 조작변인·종속변인·통제변인을 찾아서 정리해줘</div>
+            <div class="prompt-line">보기 ㄱ, ㄴ, ㄷ을 하나씩 검증해줘. 틀린 보기는 왜 틀렸는지 이 자료 근거로 설명해줘</div>
+            <button class="copy-btn" onclick="copyPrompt(this)">복사</button>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="acc-item">
+        <button class="acc-btn" onclick="toggleAcc(this)"><span>헷갈리는 개념 비교</span><span class="acc-arrow">▾</span></button>
+        <div class="acc-body"><div class="acc-content">
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>과목</th><th>자주 헷갈리는 비교</th></tr></thead>
+              <tbody>
+                <tr><td><span class="tag" style="background:#DEF0EB;color:#1B7A6C">생명과학</span></td><td>감수분열 vs 체세포분열</td></tr>
+                <tr><td><span class="tag" style="background:#EAF0F8;color:#1B3A6B">화학</span></td><td>산화환원 vs 중화</td></tr>
+                <tr><td><span class="tag" style="background:#FBEAE7;color:#C1392B">물리학</span></td><td>등속 운동 vs 등가속도 운동</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="prompt-box">
+            <div class="prompt-tag">이렇게 질문하세요</div>
+            <div class="prompt-line">이 자료에서 감수분열과 체세포분열이 실제로 어떻게 다르게 출제되는지 찾아서 비교해줘</div>
+            <button class="copy-btn" onclick="copyPrompt(this)">복사</button>
+          </div>
+          <div class="note good"><div class="note-title">🏆 과탐 핵심 한 줄</div><div><strong>'개념 이해'보다 '자료를 보고 판정하는 훈련'에 EDEN_GO를 집중시키세요.</strong></div></div>
+        </div></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ═════ 하루 루틴 ═════ -->
+  <section class="section" id="routine">
+    <div class="sec-head">
+      <div class="sec-num">10</div>
+      <div><h2 class="sec-title">EDEN_GO 하루 루틴</h2><p class="sec-desc">매일 이 흐름대로 하면 수능까지 완벽한 복습 시스템이 완성됩니다</p></div>
+    </div>
+
+    <div class="routine">
+      <div class="routine-row">
+        <div class="routine-time"><div class="t">☀️ 아침</div><div class="d">10~15분</div></div>
+        <div class="routine-body"><h4>뇌 깨우기 — 플래시카드 & 어휘</h4>
+        <p>영어 어휘 플래시카드, 수학 '조건-공식' 카드, 탐구 O/X 5개, 한국사 타임라인 훑기 — 통학 중에도 가능합니다.</p></div>
+      </div>
+      <div class="routine-row">
+        <div class="routine-time"><div class="t">📝 수업 전</div><div class="d">10분</div></div>
+        <div class="routine-body"><h4>약점 체크 — 진단 퀴즈</h4>
+        <p>오늘 단원 진단 퀴즈 3~5문제, 어제 틀린 문제 재분석 — 오늘 집중할 포인트가 명확해집니다.</p></div>
+      </div>
+      <div class="routine-row">
+        <div class="routine-time"><div class="t">🔥 메인</div><div class="d">50~60분</div></div>
+        <div class="routine-body"><h4>딥 러닝 — 꼬리 질문으로 파고들기</h4>
+        <p>어려운 지문·킬러 문항 하나를 끝까지 파기. 수학은 힌트 모드, 국어는 오답 분석, 영어는 구조 분석. <strong>"이해한 척" 금지 — 반드시 백지 복습으로 마무리.</strong></p></div>
+      </div>
+      <div class="routine-row">
+        <div class="routine-time"><div class="t">🌙 마무리</div><div class="d">10분</div></div>
+        <div class="routine-body"><h4>정리 — 오늘 배운 것 저장</h4>
+        <p>핵심 3줄 요약, 오답 패턴 1개를 개인 노트에 저장. 길게 쓸 필요 없습니다.</p></div>
+      </div>
+      <div class="routine-row weekend">
+        <div class="routine-time"><div class="t">🗓️ 주말</div><div class="d">30~40분</div></div>
+        <div class="routine-body"><h4>주간 정리 — 요약과 마인드맵</h4>
+        <p>이번 주 범위 스터디 가이드 생성, 오답노트 압축본 만들기, 다음 주 계획 세우기 — 쌓이면 시험 직전 볼 완벽한 자료가 됩니다.</p></div>
+      </div>
+    </div>
+
+    <div class="eden-banner">
+      <div class="eden-banner-text">
+        <div class="eden-banner-title">오늘 루틴, EDEN_GO에서 시작하세요</div>
+        <div class="eden-banner-sub">로그인 1번 · 매일 비밀번호만 입력</div>
+      </div>
+      <a href="https://metastudy25.github.io/How-to-use-Eden_Go-2026/" target="_blank" rel="noopener" class="stamp-btn">EDEN_GO 열기 →</a>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ═════ 주의사항 ═════ -->
+  <section class="section" id="caution">
+    <div class="sec-head">
+      <div class="sec-num">11</div>
+      <div><h2 class="sec-title">반드시 지켜야 할 주의사항</h2><p class="sec-desc">AI를 잘못 쓰면 오히려 성적이 떨어질 수 있습니다</p></div>
+    </div>
+
+    <div class="card" style="border-left-color:var(--red)">
+      <div class="card-title" style="color:var(--red);margin-bottom:8px">✕ AI 답변을 그대로 외우지 마세요</div>
+      <p>AI의 설명은 <strong>이해를 돕는 도구</strong>일 뿐, 그 자체가 정답은 아닙니다. 반드시
+      <mark>기출 원문·교과서·해설과 대조</mark>하세요.</p>
+    </div>
+    <div class="card" style="border-left-color:var(--red)">
+      <div class="card-title" style="color:var(--red);margin-bottom:8px">✕ 수학·과탐 계산은 반드시 검산하세요</div>
+      <p>복잡한 계산 과정에서 실수가 있을 수 있습니다. <mark>최종 숫자는 반드시 직접 확인</mark>하세요.</p>
+    </div>
+    <div class="card" style="border-left-color:var(--red)">
+      <div class="card-title" style="color:var(--red);margin-bottom:8px">✕ 변형문항은 '보조' 훈련입니다</div>
+      <p>연습용으로는 좋지만 실제 평가원 출제 스타일과 100% 같지 않습니다.
+      최종 기준은 언제나 <mark>평가원 기출</mark>입니다.</p>
+    </div>
+    <div class="card" style="border-left-color:var(--red)">
+      <div class="card-title" style="color:var(--red);margin-bottom:8px">✕ "이해한 척"이 가장 위험합니다</div>
+      <p>AI 설명을 읽고 넘어가는 건 이해가 아니라 읽은 것뿐입니다. 아래 중 하나로 반드시 검증하세요.</p>
+      <ul class="check-ul" style="margin-top:10px">
+        <li><strong>백지 복습:</strong> 화면을 닫고 혼자 핵심을 적어보기</li>
+        <li><strong>직접 설명하기:</strong> 친구에게 설명할 수 있는지 확인</li>
+        <li><strong>유사문항 재풀이:</strong> 비슷한 문제로 진짜 아는지 검증</li>
+      </ul>
+    </div>
+    <div class="card" style="border-left-color:var(--red)">
+      <div class="card-title" style="color:var(--red);margin-bottom:8px">✕ 계정 및 접속 규칙</div>
+      <p><strong>① 로그인 정보를 다른 사람에게 알려주지 마세요.</strong><br>
+      <strong>② 이름은 정확히 입력해야 다음부터 비밀번호만으로 접속됩니다.</strong></p>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ═════ 마무리 ═════ -->
+  <section class="closing">
+    <div class="closing-stamp">EDEN<br>GO</div>
+    <h2>도구는 준비됐습니다.<br>이제 실행만 하면 됩니다.</h2>
+    <p>
+      20년 치 기출과 EBS 수능특강이라는 최강의 무기가<br>
+      여러분의 EDEN_GO 계정에 이미 준비되어 있습니다.<br><br>
+      <strong>오늘부터 하루 10분, 진단 퀴즈 하나로 시작하세요.</strong><br>
+      그 작은 습관이 수능 날까지 쌓이면 놀라운 결과가 기다립니다.
+    </p>
+    <div class="tag-row">
+      <span class="tag" style="background:#EAF0F8;color:var(--navy);padding:6px 13px;font-size:12px">매일 10분 진단</span>
+      <span class="tag" style="background:#E9F4EC;color:var(--green);padding:6px 13px;font-size:12px">오답 분석 습관</span>
+      <span class="tag" style="background:#EFE8F7;color:#6B4E9C;padding:6px 13px;font-size:12px">주말 정리 루틴</span>
+      <span class="tag" style="background:#FBF1D8;color:#8A6A0E;padding:6px 13px;font-size:12px">시험 직전 1장 요약</span>
+    </div>
+    <a href="https://metastudy25.github.io/How-to-use-Eden_Go-2026/" target="_blank" rel="noopener" class="stamp-btn" style="margin-bottom:10px">지금 EDEN_GO 시작하기 →</a>
+  </section>
+
+</main>
+
+<!-- ══════════════ FOOTER ══════════════ -->
+<footer class="footer">
+  <div class="footer-logo">이든X학원 · 이든관리형학습센터</div>
+  <p>
+    EDEN_GO 완전정복 가이드 v2.0 · 본 자료는 재학생 전용입니다.<br>
+    지금 바로 <a href="https://metastudy25.github.io/How-to-use-Eden_Go-2026/" target="_blank" rel="noopener">EDEN_GO 열기 →</a> · 문의: 학원 데스크 또는 카카오톡 채널
+  </p>
+</footer>
+
+<a href="https://metastudy25.github.io/How-to-use-Eden_Go-2026/" target="_blank" rel="noopener" class="float-cta" id="floatCta"><span class="dot"></span>EDEN_GO 열기</a>
+
+</div><!-- /#app-content -->
+
+<script>
+// ════════════════════════════════════════════
+// 로그인 게이트 — 구글시트 학생 명단 (SHA-256 해시)
+// ════════════════════════════════════════════
+const DB = {
+  "김도윤":"9aba92d3487e110e7aa2fdf5354aa2f12c4bbb05350d7734a8782314c4845ef3",
+  "김소이":"fb1ff6b4cd66b41f531052b7e816f446c91292db0414e2039d878827840ce79c",
+  "김예원":"45939660c8f5c35bc971f3ed7fc5703f30621598487c30ed9f95414db3ef30da",
+  "김용진":"107e77b441e78ecac845e14f35b5ff662525f814b00661e4a6982b34db512d2a",
+  "김유성":"3f6ff386d9cb529ea3568f2f83e0fdfffd843fdb44e7718f591b50d6216885df",
+  "김재진":"7c00ea3aa8581cfb318e357ff545bc434a162f9992a13a39921c8d1b95c6f69b",
+  "김정윤":"706d7fbba1d12a9a1d7a4b2280300d1527e5849d752d2a6c08b3af4ec75ab397",
+  "김진우":"3dcc7dc52b3d280dd3a311e14dee52d07c717ae2bc6c5427915c6d5c27d342bf",
+  "김채은":"130d9b8c9ec25016e5f05cc58980d7b15f423e0279591cae0c884dd09ae718c2",
+  "노주원":"83676d470a83048c1e055544a768d80c21d93ab8a403e54394372164502d44c9",
+  "민수연":"1390bd146e382332956bf6c327144a82556b88d2d444df6b24fc31292ae3dc3e",
+  "박민균":"c53287c86c50a889ed2d476b02483064365754d5a3424d7e44ec3aaeb95eba93",
+  "박서찬":"bf94a38fa9d4ab70a5b0cb59f072e3fc1689c58b3fa01873fa3e6f19f3b970ec",
+  "박주혁":"61c72e690ec44337174b0b31012233072a89c6d186d0e7e022e3ccae3853af3d",
+  "박준혁":"a9e260b7637b6585774a547179eb72794f59b8038b26f49ebe5641667f2eb8ce",
+  "박준혁(H)":"3de8a8edab205e084457572f61874869ae88bc1fc2109c1fa52bab9173ef581c",
+  "박지후":"50f31d349bb32cf05b455e530cb8059532583affb3c0bf28e2360b7ecd32cb3a",
+  "배소진":"0a57b960858f60e22de87aa6c58010ac548751fae0282345dcb13b4519e2034f",
+  "백사라":"5d5907235046019fe4208a8f9ded1e3c4abafc62182264887e46ce0d947a467b",
+  "서진영":"fe344da6a149893d394b27be166f710a7826ee8c332dd851c7f46438080ca02b",
+  "손은지":"0fa4bb9f38389b711493168bee156c265a1672ac4a4399459aa34644128ee8e7",
+  "손지예":"24304dbc3715a1226da17fcef500a482c5ef549120fa4e10b15f24f5f3b44934",
+  "손태영":"7bc0c3167e9a0a80a31ecbcc6463a3a7bd53027e0cea3f0f1f3e92b872c93e34",
+  "송채은":"eb96e94d61103c17c80a8ebd2834ba5b9df522d37554118f2618d3d6cd641201",
+  "신주환":"c13395ca8205e90ac9f27337817994ec756b7f0cd9949883da843b5c91aef1f6",
+  "신준호":"5de9a20bd4df96996c8bc86022016db7085e2d545b8701a24cc6bbd957031346",
+  "예서영":"8471565a5074322e4dc98caf9cb29568eed4214b2d51098213abe537da1cf067",
+  "이다경":"652222b7bc6e309be7f9836b5cdc5ef986f044d2692400a6766ac2b932ae9659",
+  "이민욱":"70b7edce468460ffb129840e5cf46ccf6fe6736293d6f2ce6d6f1e8e902ea711",
+  "이서윤":"f19ada6ce4109137d5b9d667057a7fba30b11761af856c1282e58bdd26f2b78e",
+  "이성현":"9b3cf02ac105febb1dbde06af5fade4cff6b437a73f4a029fa057770dc60d279",
+  "이우진":"0a73b140020135069bc0b651656869faab1f4051c3aaeebb1cbf18025d50d0cd",
+  "이유림":"066d97d24715daf548f0a34b4b27d8546fb72c44c7204834cc218aa12905c7df",
+  "이윤재":"f6049634eae9cec258094dbb3da7bdb814fcf5dc176d21b718fb3cb56eff992a",
+  "이재훈":"338af3f70516a6a2e94dc86c3b836dc7b700829e34d6251bc90f67865b4c197c",
+  "임도윤":"8fbe140c56c5f4b76685601f077ab9070aa16eee9cce98280016141213d88e1d",
+  "장다연":"abe32689c0d56a0e6c265b855987a88560516cf44b7f72e8094a72504c432a79",
+  "장은서":"35f75d7e302ebdbe8d8468b645ed7bd4b9a879d232c352235528fe8e38460fa5",
+  "정가온":"57bdab2134ca2a4bed3a338db06052dd0cef54c013f72d296497a0708f27f369",
+  "정시헌":"8fe81b2cb78c8653f146116ed68990c20ffadb95d3651dbea3883122c69ab25d",
+  "조승훈":"e10bddd8fe954da0fffe5b071cd3ee90467b7145826418879eefba88bbbccec3",
+  "조현호":"760c2a7dbec68a4026ea633203c0be43ac18e940ba288f4c53b1a115113882ac",
+  "최라온":"4da2b24fc5895c5ebe27625cf73729ff37b1981a659184ac502a308868986f90",
+  "최시온":"e002dbabcc4dbecc36a1a9e3477413329233f8c9e4866e489c00192490d74563",
+  "최시은":"5be62b684481b0d6e3a3b8b524e562a16da29893d772ff4fbef0e458a69b6cd7",
+  "최윤":"391f268bf367b2b4d1c6ca892342230469e07fa93242a2884ee6f45610b70946",
+  "한승우":"fce2b011690ac1eb66130b2e1340f7b033bc76585a6273648e16274672652cc4",
+  "황혜암":"e064d1216d567bb92735547df79f9d2dc8f5b7b73b0968166b185d212e2f6bc3",
+  "양세인":"cf87d5e86ff004b8d96a2ace0687001ee2946b6e8532123c3e52905ce51b25f6",
+  "최수정":"ff6c71f7927e137c3a505656119910003a46e5a63176503d57f4d2722bd737fe"
+};
+
+const LG_KEY = 'eden_go_student';
+const LG_SESSION_KEY = 'eden_go_authed';
+const LG_SESSION_TTL = 1000*60*60*12; // 12시간 — 이 시간 안엔 EDEN_GO 가이드로 넘어가도 재로그인 없음
+
+function lgGetAuthedSession(){
+  try{
+    const raw = localStorage.getItem(LG_SESSION_KEY);
+    if(!raw) return null;
+    const s = JSON.parse(raw);
+    if(!s || !s.name || !DB[s.name]) return null;
+    if(Date.now() - s.ts > LG_SESSION_TTL) return null;
+    return s.name;
+  }catch(e){ return null; }
+}
+function lgSetAuthedSession(name){
+  localStorage.setItem(LG_SESSION_KEY, JSON.stringify({name:name, ts:Date.now()}));
+}
+async function lgSha256(str){
+  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+async function lgVerify(name,pw){
+  if(!DB[name]) return {ok:false,msg:'이름을 찾을 수 없습니다. 정확히 입력해주세요.'};
+  if(DB[name]!==await lgSha256(pw)) return {ok:false,msg:'비밀번호가 틀렸습니다.'};
+  return {ok:true};
+}
+function lgShowMsg(t,c){ const e=document.getElementById('lg-msg'); e.textContent=t; e.className='lg-msg '+c; }
+function lgClearMsg(){ const e=document.getElementById('lg-msg'); e.className='lg-msg'; e.textContent=''; }
+function lgSetLoading(id,on){ const b=document.getElementById(id); b.disabled=on; b.textContent=on?'확인 중...':'입장하기'; }
+
+function lgEnterApp(){
+  document.getElementById('login-gate').style.display='none';
+  document.getElementById('app-content').style.display='block';
+  window.scrollTo(0,0);
+}
+function lgShowPwOnly(name){
+  document.getElementById('lg-sec-first').style.display='none';
+  document.getElementById('lg-sec-pw').style.display='block';
+  document.getElementById('lg-avatar').textContent=name.charAt(0);
+  document.getElementById('lg-ret-name').textContent=name+' 학생';
+  setTimeout(()=>{ document.getElementById('lg-inp-pw2').focus(); },150);
+}
+
+async function lgDoLogin(){
+  lgClearMsg();
+  const name=document.getElementById('lg-inp-name').value.trim();
+  const pw=document.getElementById('lg-inp-pw1').value.trim();
+  if(!name){ lgShowMsg('❗ 이름을 입력해주세요.','err'); document.getElementById('lg-inp-name').focus(); return; }
+  if(!pw){ lgShowMsg('❗ 비밀번호를 입력해주세요.','err'); document.getElementById('lg-inp-pw1').focus(); return; }
+  lgSetLoading('lg-btn1',true); lgShowMsg('확인 중...','loading');
+  const res=await lgVerify(name,pw);
+  lgSetLoading('lg-btn1',false);
+  if(res.ok){ localStorage.setItem(LG_KEY,name); lgSetAuthedSession(name); lgEnterApp(); }
+  else{ lgShowMsg('❌ '+res.msg,'err'); document.getElementById('lg-inp-pw1').value=''; document.getElementById('lg-inp-pw1').focus(); }
+}
+async function lgDoLoginReturn(){
+  lgClearMsg();
+  const name=localStorage.getItem(LG_KEY);
+  const pw=document.getElementById('lg-inp-pw2').value.trim();
+  if(!pw){ lgShowMsg('❗ 비밀번호를 입력해주세요.','err'); return; }
+  lgSetLoading('lg-btn2',true); lgShowMsg('확인 중...','loading');
+  const res=await lgVerify(name,pw);
+  lgSetLoading('lg-btn2',false);
+  if(res.ok){ lgSetAuthedSession(name); lgEnterApp(); }
+  else{ lgShowMsg('❌ '+res.msg,'err'); document.getElementById('lg-inp-pw2').value=''; document.getElementById('lg-inp-pw2').focus(); }
+}
+function lgSwitchFirst(){ localStorage.removeItem(LG_KEY); localStorage.removeItem(LG_SESSION_KEY); location.reload(); }
+
+// ══ 로그인 게이트 초기화 (다른 EDEN_GO 페이지 세션 있으면 즉시 통과) ══
+(function(){
+  const authed = lgGetAuthedSession();
+  if(authed){ lgEnterApp(); return; }
+  const s = localStorage.getItem(LG_KEY);
+  if(s && DB[s]) lgShowPwOnly(s);
+  else setTimeout(()=>{ document.getElementById('lg-inp-name').focus(); }, 100);
+})();
+
+function toggleAcc(btn){
+  const item = btn.parentElement;
+  const isOpen = item.classList.contains('open');
+  item.parentElement.querySelectorAll('.acc-item').forEach(i=>i.classList.remove('open'));
+  if(!isOpen) item.classList.add('open');
+}
+function copyPrompt(btn){
+  const box = btn.parentElement;
+  const lines = box.querySelectorAll('.prompt-line');
+  let text = '';
+  lines.forEach(l=>{ text += l.textContent.trim() + '\n'; });
+  navigator.clipboard.writeText(text).then(()=>{
+    btn.textContent='복사됨 ✓';
+    setTimeout(()=>{btn.textContent='복사';},1800);
+  }).catch(()=>{
+    const ta=document.createElement('textarea'); ta.value=text;
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta);
+    btn.textContent='복사됨 ✓'; setTimeout(()=>{btn.textContent='복사';},1800);
+  });
+}
+window.addEventListener('scroll', ()=>{
+  const st = window.scrollY;
+  const dh = document.documentElement.scrollHeight - window.innerHeight;
+  document.getElementById('progress').style.width = (st/dh*100)+'%';
+  document.getElementById('floatCta').classList.toggle('visible', st>560);
+
+  let current='';
+  document.querySelectorAll('.section').forEach(s=>{
+    if(window.scrollY >= s.offsetTop-90) current = s.id;
+  });
+  document.querySelectorAll('.nav-tab').forEach(t=>{
+    t.classList.remove('active');
+    if(t.getAttribute('href')==='#'+current) t.classList.add('active');
+  });
+});
+document.querySelectorAll('.nav-tab[href^="#"]').forEach(t=>{
+  t.addEventListener('click', e=>{
+    e.preventDefault();
+    const target = document.querySelector(t.getAttribute('href'));
+    if(target) target.scrollIntoView({behavior:'smooth'});
+  });
+});
+</script>
+</body>
+</html>
